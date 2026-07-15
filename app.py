@@ -39,6 +39,21 @@ st.markdown("""
         border-right: 1px solid rgba(99, 102, 241, 0.15);
         box-shadow: 4px 0 18px rgba(79, 70, 229, 0.06);
         padding-top: 10px;
+        z-index: 999999 !important;
+        min-height: 100vh;
+    }
+
+    /* En mobile, el sidebar se abre como panel flotante: aseguramos que
+       cubra todo el alto y quede siempre por encima de todo el contenido */
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            z-index: 999999 !important;
+            position: fixed !important;
+            height: 100vh !important;
+        }
+        [data-testid="stSidebar"][aria-expanded="true"] {
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.35);
+        }
     }
 
     [data-testid="stSidebar"] h2 {
@@ -117,44 +132,6 @@ st.markdown("""
         box-shadow: 0 12px 28px -6px rgba(79, 70, 229, 0.12), 0 4px 10px -4px rgba(79, 70, 229, 0.06);
         border: 1px solid rgba(99, 102, 241, 0.10);
         margin-bottom: 20px;
-    }
-
-    /* Contenedor con scroll horizontal para el gráfico de barras */
-    .scroll-grafico {
-        width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding-bottom: 10px;
-    }
-    /* Barra de desplazamiento visible y estilizada (Chrome/Edge) */
-    .scroll-grafico::-webkit-scrollbar {
-        height: 12px;
-    }
-    .scroll-grafico::-webkit-scrollbar-track {
-        background: var(--secondary-background-color);
-        border-radius: 10px;
-    }
-    .scroll-grafico::-webkit-scrollbar-thumb {
-        background: #6366f1;
-        border-radius: 10px;
-        border: 2px solid var(--secondary-background-color);
-    }
-    .scroll-grafico::-webkit-scrollbar-thumb:hover {
-        background: #4338ca;
-    }
-    /* Firefox */
-    .scroll-grafico {
-        scrollbar-width: auto;
-        scrollbar-color: #6366f1 var(--secondary-background-color);
-    }
-    .scroll-hint {
-        font-size: 12px;
-        color: var(--text-color);
-        opacity: 0.55;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
     }
 
     /* --- LISTA DE REGIONES (Reportes por Región) --- */
@@ -291,10 +268,6 @@ try:
             st.markdown("<div class='grafico-card'>", unsafe_allow_html=True)
             st.subheader("Casos de Dengue por Departamento")
             if "DEPARTAMENTO" in df.columns and "CASOS_DENGUE_2024" in df.columns:
-                num_departamentos = len(df)
-                # Más ancho por barra para que quepan bien las etiquetas de valor
-                ancho_grafico = max(1000, num_departamentos * 75)
-
                 df_ordenado = df.sort_values("CASOS_DENGUE_2024", ascending=False)
 
                 fig_bar = px.bar(
@@ -305,25 +278,21 @@ try:
                 fig_bar.update_traces(
                     texttemplate='%{text:,}',
                     textposition='outside',
-                    textfont=dict(size=11, color="#818cf8"),
+                    textfont=dict(size=10, color="#818cf8"),
                     cliponaxis=False,
                     marker=dict(line=dict(width=0))
                 )
                 fig_bar.update_layout(
                     plot_bgcolor="rgba(0,0,0,0)",
                     paper_bgcolor="rgba(0,0,0,0)",
-                    margin=dict(t=40, b=20, l=20, r=20),
-                    xaxis=dict(tickangle=-30, title="", tickfont=dict(size=13, color="#94a3b8")),
+                    margin=dict(t=40, b=20, l=10, r=10),
+                    xaxis=dict(tickangle=-45, title="", tickfont=dict(size=10, color="#94a3b8")),
                     yaxis=dict(title="", gridcolor="rgba(148, 163, 184, 0.3)", tickfont=dict(color="#94a3b8")),
-                    height=450,
-                    width=ancho_grafico,
-                    bargap=0.35
+                    height=430,
+                    bargap=0.3
                 )
 
-                st.markdown('<div class="scroll-hint">↔️ Desliza la barra de abajo para ver todos los departamentos</div>', unsafe_allow_html=True)
-                st.markdown('<div class="scroll-grafico">', unsafe_allow_html=True)
-                st.plotly_chart(fig_bar, use_container_width=False)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.plotly_chart(fig_bar, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_der:
