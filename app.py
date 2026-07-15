@@ -34,8 +34,14 @@ st.markdown("""
     }
 
     /* --- SIDEBAR DIFERENCIADO DEL CONTENIDO --- */
+    /* Apuntamos a TODOS los contenedores internos, no solo al externo,
+       porque Streamlit anida varios divs y algunos quedaban transparentes */
+    [data-testid="stSidebar"],
+    [data-testid="stSidebarContent"],
+    [data-testid="stSidebarUserContent"] {
+        background-color: var(--background-color) !important;
+    }
     [data-testid="stSidebar"] {
-        background-color: var(--background-color);
         border-right: 1px solid rgba(99, 102, 241, 0.15);
         box-shadow: 4px 0 18px rgba(79, 70, 229, 0.06);
         padding-top: 10px;
@@ -48,11 +54,11 @@ st.markdown("""
     @media (max-width: 768px) {
         [data-testid="stSidebar"] {
             z-index: 999999 !important;
-            position: fixed !important;
-            height: 100vh !important;
+            min-height: 100vh !important;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
         }
-        [data-testid="stSidebar"][aria-expanded="true"] {
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.35);
+        [data-testid="stSidebarContent"] {
+            min-height: 100vh !important;
         }
     }
 
@@ -107,21 +113,21 @@ st.markdown("""
     /* Los 3 cuadrados de colores arriba */
     .card-blue {
         background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
-        padding: 22px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        padding: 16px 20px; border-radius: 14px; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     .card-green {
         background: linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%);
-        padding: 22px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        padding: 16px 20px; border-radius: 14px; color: white; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
     }
     .card-red {
         background: linear-gradient(135deg, #fb7185 0%, #be123c 100%);
-        padding: 22px; border-radius: 16px; color: white; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+        padding: 16px 20px; border-radius: 14px; color: white; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
     }
     .card-title {
-        font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 6px;
+        font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; margin-bottom: 4px;
     }
     .card-value {
-        font-size: 30px; font-weight: 700; margin: 0;
+        font-size: 26px; font-weight: 700; margin: 0;
     }
 
     /* Contenedor redondeado con relieve (efecto tarjeta) exclusivo para los gráficos */
@@ -286,13 +292,17 @@ try:
                     plot_bgcolor="rgba(0,0,0,0)",
                     paper_bgcolor="rgba(0,0,0,0)",
                     margin=dict(t=40, b=20, l=10, r=10),
-                    xaxis=dict(tickangle=-45, title="", tickfont=dict(size=10, color="#94a3b8")),
-                    yaxis=dict(title="", gridcolor="rgba(148, 163, 184, 0.3)", tickfont=dict(color="#94a3b8")),
+                    xaxis=dict(tickangle=-45, title="", tickfont=dict(size=10, color="#94a3b8"), fixedrange=True),
+                    yaxis=dict(title="", gridcolor="rgba(148, 163, 184, 0.3)", tickfont=dict(color="#94a3b8"), fixedrange=True),
                     height=430,
-                    bargap=0.3
+                    bargap=0.3,
+                    dragmode=False
                 )
 
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(
+                    fig_bar, use_container_width=True,
+                    config={"displayModeBar": False, "scrollZoom": False, "doubleClick": False}
+                )
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_der:
@@ -314,7 +324,10 @@ try:
                     height=380,
                     legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5, font=dict(color="#94a3b8"))
                 )
-                st.plotly_chart(fig_pie, use_container_width=True)
+                st.plotly_chart(
+                    fig_pie, use_container_width=True,
+                    config={"displayModeBar": False, "scrollZoom": False}
+                )
             st.markdown("</div>", unsafe_allow_html=True)
 
     # ----------------------------------------------------
@@ -385,10 +398,14 @@ try:
                     margin=dict(t=20, b=10, l=10, r=10),
                     height=380,
                     showlegend=False,
-                    xaxis=dict(title="", tickfont=dict(size=14, color="#94a3b8")),
-                    yaxis=dict(title="", gridcolor="rgba(148, 163, 184, 0.3)", tickfont=dict(color="#94a3b8"))
+                    xaxis=dict(title="", tickfont=dict(size=14, color="#94a3b8"), fixedrange=True),
+                    yaxis=dict(title="", gridcolor="rgba(148, 163, 184, 0.3)", tickfont=dict(color="#94a3b8"), fixedrange=True),
+                    dragmode=False
                 )
-                st.plotly_chart(fig_reg, use_container_width=True)
+                st.plotly_chart(
+                    fig_reg, use_container_width=True,
+                    config={"displayModeBar": False, "scrollZoom": False, "doubleClick": False}
+                )
                 st.markdown("</div>", unsafe_allow_html=True)
 
             # ---------- TABLA COMPARATIVA COMPLETA (todas las regiones) ----------
