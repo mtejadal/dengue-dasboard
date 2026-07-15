@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from streamlit_option_menu import option_menu
 
 # 1. Configuración de página limpia
 st.set_page_config(
@@ -10,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. Estilos personalizados
+# 2. Estilos personalizados para menú superior fijo y diseño general
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -20,7 +19,7 @@ st.markdown("""
         color: var(--text-color);
     }
 
-    /* Fondo general (se adapta solo a modo claro/oscuro de Streamlit) */
+    /* Fondo general */
     [data-testid="stAppViewContainer"] {
         background-color: var(--secondary-background-color);
     }
@@ -28,71 +27,12 @@ st.markdown("""
         background-color: transparent;
     }
 
-    /* Quita el padding superior por defecto de Streamlit para que el header pegue arriba */
+    /* Padding superior compacto */
     .block-container {
         padding-top: 1rem;
     }
 
-    /* --- SIDEBAR DIFERENCIADO DEL CONTENIDO --- */
-    /* Apuntamos a TODOS los contenedores internos, no solo al externo,
-       porque Streamlit anida varios divs y algunos quedaban transparentes */
-    [data-testid="stSidebar"],
-    [data-testid="stSidebarContent"],
-    [data-testid="stSidebarUserContent"] {
-        background-color: var(--background-color) !important;
-    }
-    [data-testid="stSidebar"] {
-        border-right: 1px solid rgba(99, 102, 241, 0.15);
-        box-shadow: 4px 0 18px rgba(79, 70, 229, 0.06);
-        padding-top: 10px;
-        z-index: 999999 !important;
-        min-height: 100vh;
-    }
-
-    /* "Fondo fantasma": una capa sólida que se estira EXACTAMENTE detrás
-       de todo el sidebar, sin importar qué tan transparentes sean los
-       divs internos que genera Streamlit (incluye el iframe del menú) */
-    [data-testid="stSidebar"]::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--background-color);
-        z-index: -1;
-    }
-
-    /* En mobile, el sidebar se abre como panel flotante: aseguramos que
-       cubra todo el alto y quede siempre por encima de todo el contenido */
-    @media (max-width: 768px) {
-        [data-testid="stSidebar"] {
-            z-index: 999999 !important;
-            min-height: 100vh !important;
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
-        }
-        [data-testid="stSidebar"]::before {
-            position: fixed !important;
-            top: 0 !important; left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-        }
-        [data-testid="stSidebarContent"] {
-            min-height: 100vh !important;
-            position: relative;
-            z-index: 1;
-        }
-    }
-
-    [data-testid="stSidebar"] h2 {
-        color: #6366f1 !important;
-        font-size: 20px !important;
-        font-weight: 700;
-    }
-
-    /* Estilo del option_menu (nav-pills) */
-    [data-testid="stSidebar"] nav {
-        background-color: transparent !important;
-    }
-
-    /* --- HEADER SUPERIOR (índigo -> violeta) --- */
+    /* --- HEADER SUPERIOR --- */
     .top-header {
         background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
         padding: 18px 28px;
@@ -100,7 +40,7 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
     }
     .top-header-title {
@@ -115,7 +55,30 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* Título de sección (debajo del header) */
+    /* --- MENÚ SUPERIOR HORIZONTAL (Estilo Pestañas) --- */
+    div.stRadio > div {
+        flex-direction: row !important;
+        gap: 12px;
+        background-color: var(--background-color);
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05);
+        margin-bottom: 24px;
+    }
+    div.stRadio > div label {
+        background-color: transparent !important;
+        padding: 8px 18px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    div.stRadio > div label:hover {
+        background-color: rgba(99, 102, 241, 0.1) !important;
+    }
+
+    /* Título de sección */
     .header-title {
         font-size: 28px !important;
         font-weight: 700 !important;
@@ -129,7 +92,7 @@ st.markdown("""
         margin-bottom: 25px;
     }
 
-    /* Los 3 cuadrados de colores arriba */
+    /* Tarjetas métricas superiores */
     .card-blue {
         background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
         padding: 16px 20px; border-radius: 14px; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
@@ -149,7 +112,7 @@ st.markdown("""
         font-size: 26px; font-weight: 700; margin: 0;
     }
 
-    /* Contenedor redondeado con relieve (efecto tarjeta) exclusivo para los gráficos */
+    /* Tarjetas de gráficos */
     .grafico-card {
         background: var(--background-color);
         padding: 24px;
@@ -159,7 +122,6 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* --- LISTA DE REGIONES (Reportes por Región) --- */
     .region-list-title {
         font-size: 13px;
         font-weight: 600;
@@ -169,7 +131,6 @@ st.markdown("""
         letter-spacing: 0.04em;
         margin-bottom: 10px;
     }
-    /* Botones normales de la lista (no seleccionados) */
     div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="secondary"] {
         text-align: left !important;
         justify-content: flex-start !important;
@@ -184,7 +145,6 @@ st.markdown("""
         background-color: rgba(99, 102, 241, 0.12) !important;
         color: #6366f1 !important;
     }
-    /* Botón seleccionado (activo, resaltado en índigo) */
     div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button[kind="primary"] {
         text-align: left !important;
         justify-content: flex-start !important;
@@ -213,41 +173,9 @@ try:
     total_regiones = df["DEPARTAMENTO"].nunique() if "DEPARTAMENTO" in df.columns else 0
 
     # ----------------------------------------------------
-    # MENÚ LATERAL ESTILO IMAGEN 2 (sidebar blanco + iconos)
+    # HEADER AZUL SUPERIOR
     # ----------------------------------------------------
-    with st.sidebar:
-        st.markdown("## 🏥 Menú Principal")
-        st.markdown("---")
-        menu = option_menu(
-            menu_title=None,
-            options=["Dashboard General", "Reportes por Región", "Base de Datos"],
-            icons=["bar-chart-fill", "geo-alt-fill", "database-fill"],
-            default_index=0,
-            styles={
-                "container": {"padding": "0!important", "background-color": "transparent"},
-                "icon": {"color": "#6366f1", "font-size": "16px"},
-                "nav-link": {
-                    "font-size": "15px",
-                    "font-weight": "500",
-                    "text-align": "left",
-                    "margin": "4px 0",
-                    "padding": "10px 14px",
-                    "border-radius": "10px",
-                    "color": "var(--text-color)",
-                    "--hover-color": "rgba(99, 102, 241, 0.12)",
-                },
-                "nav-link-selected": {
-                    "background-color": "#6366f1",
-                    "color": "white",
-                    "font-weight": "600",
-                },
-            }
-        )
-
-    # ----------------------------------------------------
-    # HEADER AZUL SUPERIOR (visible en todas las pestañas)
-    # ----------------------------------------------------
-    st.markdown(f"""
+    st.markdown("""
         <div class="top-header">
             <p class="top-header-title">🏥 Vigilancia Dengue & RENIPRESS</p>
             <p class="top-header-badge">Dataset Local Integrado</p>
@@ -255,13 +183,21 @@ try:
     """, unsafe_allow_html=True)
 
     # ----------------------------------------------------
+    # MENÚ FIJO SUPERIOR (Reemplazo del Sidebar)
+    # ----------------------------------------------------
+    menu = st.radio(
+        "Navegación Principal",
+        ["📊 Dashboard General", "🔍 Reportes por Región", "🗄️ Base de Datos"],
+        label_visibility="collapsed"
+    )
+
+    # ----------------------------------------------------
     # DASHBOARD GENERAL
     # ----------------------------------------------------
-    if menu == "Dashboard General":
+    if menu == "📊 Dashboard General":
         st.markdown("<div class='header-title'>📊 Dashboard de Vigilancia Epidemiológica</div>", unsafe_allow_html=True)
         st.markdown("<div class='header-subtitle'>Monitoreo en tiempo real de Casos de Dengue y Capacidad Hospitalaria (RENIPRESS)</div>", unsafe_allow_html=True)
 
-        # Los 3 cuadrados de colores arriba
         c1, c2, c3 = st.columns(3)
         with c1:
             st.markdown(f"""
@@ -352,20 +288,18 @@ try:
     # ----------------------------------------------------
     # REPORTES POR REGIÓN
     # ----------------------------------------------------
-    elif menu == "Reportes por Región":
+    elif menu == "🔍 Reportes por Región":
         st.markdown("<div class='header-title'>🔍 Análisis Comparativo por Región</div>", unsafe_allow_html=True)
         st.markdown("<div class='header-subtitle'>Seleccione un departamento para evaluar su capacidad hospitalaria frente al dengue.</div>", unsafe_allow_html=True)
 
         if "DEPARTAMENTO" in df.columns:
             lista_departamentos = sorted(df["DEPARTAMENTO"].dropna().unique().tolist())
 
-            # Estado persistente de la región seleccionada
             if "region_seleccionada" not in st.session_state:
                 st.session_state.region_seleccionada = lista_departamentos[0]
 
             col_lista, col_grafico = st.columns([1, 2.2])
 
-            # ---------- COLUMNA IZQUIERDA: buscador + lista de regiones ----------
             with col_lista:
                 st.markdown("<div class='grafico-card' style='padding:18px;'>", unsafe_allow_html=True)
                 st.markdown("<div class='region-list-title'>Región</div>", unsafe_allow_html=True)
@@ -395,7 +329,6 @@ try:
             casos_reg = df_reg.get("CASOS_DENGUE_2024", 0)
             renipress_reg = df_reg.get("TOTAL_ESTABLECIMIENTOS_SALUD", 0)
 
-            # ---------- COLUMNA DERECHA: gráfico de la región seleccionada ----------
             with col_grafico:
                 st.markdown("<div class='grafico-card'>", unsafe_allow_html=True)
                 st.markdown(f"#### {region_seleccionada}")
@@ -427,7 +360,6 @@ try:
                 )
                 st.markdown("</div>", unsafe_allow_html=True)
 
-            # ---------- TABLA COMPARATIVA COMPLETA (todas las regiones) ----------
             st.markdown("<div class='grafico-card'>", unsafe_allow_html=True)
             st.markdown("##### 📋 Desglose Analítico por Región")
             columnas_tabla = [c for c in ["DEPARTAMENTO", "CASOS_DENGUE_2024", "TOTAL_ESTABLECIMIENTOS_SALUD"] if c in df.columns]
@@ -444,7 +376,7 @@ try:
     # ----------------------------------------------------
     # BASE DE DATOS
     # ----------------------------------------------------
-    elif menu == "Base de Datos":
+    elif menu == "🗄️ Base de Datos":
         st.markdown("<div class='header-title'>🗄️ Base de Datos Integrada</div>", unsafe_allow_html=True)
         st.markdown("<div class='header-subtitle'>Matriz completa de registros procesados.</div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
