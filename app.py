@@ -49,6 +49,17 @@ st.markdown("""
         min-height: 100vh;
     }
 
+    /* "Fondo fantasma": una capa sólida que se estira EXACTAMENTE detrás
+       de todo el sidebar, sin importar qué tan transparentes sean los
+       divs internos que genera Streamlit (incluye el iframe del menú) */
+    [data-testid="stSidebar"]::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--background-color);
+        z-index: -1;
+    }
+
     /* En mobile, el sidebar se abre como panel flotante: aseguramos que
        cubra todo el alto y quede siempre por encima de todo el contenido */
     @media (max-width: 768px) {
@@ -57,8 +68,16 @@ st.markdown("""
             min-height: 100vh !important;
             box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
         }
+        [data-testid="stSidebar"]::before {
+            position: fixed !important;
+            top: 0 !important; left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
         [data-testid="stSidebarContent"] {
             min-height: 100vh !important;
+            position: relative;
+            z-index: 1;
         }
     }
 
